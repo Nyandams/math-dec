@@ -93,7 +93,7 @@ class Repartition:
 
     def __init__(self):
         """
-        initialize a new repartition
+        Initialize a new repartition
         """
         self.repartition = []
 
@@ -106,20 +106,31 @@ class Repartition:
         """
         self.repartition.append(group)
 
+class Repartitions:
+    """
+    Class Repartitions is responsible of the creation of all the Repartitions
+    """
+
+    def __init__(self, appreciations, nb_project):
+        """
+        Initialize the repartitions
+        :param appreciations: All the appreciations retrieve
+        :param nb_project: number of group we need to form
+        :type appreciations: Appreciations
+        :type nb_project: int
+        """
+        students = []
+        for key, value in appreciations.studentNumbers.items():
+            students.append(key)
+
+        self.combinations = Combinations(students)
+        self.combinations.generateAllCombination()
+
+        self.repartitions = []
+        self.nb_g2 = nb_project - (len(students) - 2*nb_project)
+        self.nb_g3 = nb_project - self.nb_g2
+
+
 
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
-
-students = []
-
-for key, value in appreciations.studentNumbers.items():
-    students.append(key)
-
-combination = Combinations(students)
-combination.generateAllCombination()
-
-for comb in combination.combinaison_2:
-    print(comb)
-
-for comb in combination.combinaison_3:
-    print(comb)
-
+repartitions  = Repartitions(appreciations, 5)
