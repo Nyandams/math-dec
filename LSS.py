@@ -1,11 +1,13 @@
 import csv
 import itertools
 
-def retrieveAppreciationsCSV(csv_file):
+def retrieveAppreciationsCSV(csv_file, number_of_student):
     """
     Retrieve the appreciations from a csv file
     :param csv_file: file location
+    :param number_of_student: the number of student
     :type csv_file: str
+    :type number_of_student: int
     :return: The Appreciations retrieved from the CSV file
     :rtype: Appreciations
     """
@@ -25,7 +27,16 @@ def retrieveAppreciationsCSV(csv_file):
                 appreciations.append(row)
                 row_count += 1
         del studentNumbers[-1]
-        return Appreciations(studentNumbers, appreciations)
+
+        #in order to retrieve only the number of student we want
+        subStudentNumbers = {}
+        for key in range(number_of_student):
+            subStudentNumbers[key] = studentNumbers[key]
+
+        del appreciations[number_of_student:]
+
+
+        return Appreciations(subStudentNumbers, appreciations)
 
 
 class Appreciations:
@@ -96,19 +107,19 @@ class Repartition:
         self.repartition.append(group)
 
 
-
-
-
-appreciations = retrieveAppreciationsCSV('preferences.csv')
+appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 
 students = []
+
 for key, value in appreciations.studentNumbers.items():
     students.append(key)
 
 combination = Combinations(students)
 combination.generateAllCombination()
+
 for comb in combination.combinaison_2:
     print(comb)
 
 for comb in combination.combinaison_3:
     print(comb)
+
