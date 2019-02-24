@@ -83,6 +83,7 @@ def orderRelationship(appreciation1, appreciation2):
 def orderGroup():
 
 
+
 class Appreciations:
     """
     Class Appreciations is responsible for access to the appreciation of one student on another
