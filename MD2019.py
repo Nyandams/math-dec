@@ -1,4 +1,6 @@
+import os
 import sys
+import subprocess
 
 """
     This script run other groups script.
@@ -8,7 +10,7 @@ import sys
 """
 
 # The report number beeing processed
-report_number = 0
+report_number = 4
 
 # The maximum time a group can take to run their script
 max_compute_time = 8.5
@@ -20,9 +22,28 @@ if len(sys.argv) < 2:
 # Remove the "-" to just keep the EXT
 ext = sys.argv[1][1:]
 
+# Construct the path to the project folder
+project_folder = "PROJET_PIFE_" + str(report_number)
+
 # Construct the path to the preference file
-preference_path = "IG4/PROJET_PIFE_" + str(report_number) + "/DONNEES/preferences" + ext + ".csv"
+preference_path = project_folder + "/DONNEES/preferences" + ext + ".csv"
 
 # Construct the path to the group file
-group_path = "IG4/PROJET_PIFE_" + str(report_number) + "/RESULTATS/groupes" + ext + ".csv"
+group_path = project_folder + "/RESULTATS/groupes" + ext + ".csv"
 
+# List all the folder in the project folder
+directory_list = os.listdir(project_folder)
+directory_list.remove("DONNEES")
+directory_list.remove("RESULTATS")
+
+# For each group run thir script
+for group_acronym in directory_list:
+    print("Processing group " + group_acronym+ ": ")
+    prog_path = group_acronym + "/" + group_acronym + ".py -" + ext
+
+    # Check that the file to run exists
+    if not os.path.isfile(prog_path):
+        print("The file " + group_acronym + ".py doesn't exists")
+        continue
+
+    process = subprocess.Popen(prog_path)
