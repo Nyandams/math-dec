@@ -45,6 +45,7 @@ class Appreciations:
     """
     def __init__(self, studentNumbers, appreciations):
         """
+        Initialize the Appreciations
         :param studentNumbers: A dictionary key:studentNumber
         :param appreciations: All the appreciations of the strudents
         :type studentNumbers: dict
@@ -91,11 +92,14 @@ class Repartition:
     Class Repartition correspond to one of the Repartition that exists
     """
 
-    def __init__(self):
+    def __init__(self, appreciations):
         """
         Initialize a new repartition
+        :param appreciations: all the appreciations
+        :type appreciations: Appreciations
         """
-        self.repartition = []
+        self.repartition   = []
+        self.appreciations = appreciations
 
     def addGroup(self, group):
         """
