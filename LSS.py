@@ -125,8 +125,8 @@ class Combinations:
         Generate all the combinations possible
         :return:
         """
-        self.combinaison_2 = itertools.combinations(self.students, 2)
-        self.combinaison_3 = itertools.combinations(self.students, 3)
+        self.combination_2 = itertools.combinations(self.students, 2)
+        self.combination_3 = itertools.combinations(self.students, 3)
 
 class Repartition:
     """
@@ -193,9 +193,8 @@ class Repartitions:
         Generate all the repartitions
         """
         #we get all the combinaison of group of 3 people
-        print(self.combinations.combinaison_3)
-        for comb in self.combinations.combinaison_3:
-            print
+        combi itertools.combinations(self.combinations.combinaison_3, self.nb_g3 )
+
 
         #then we get the combinaison of
 
