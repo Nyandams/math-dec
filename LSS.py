@@ -24,28 +24,38 @@ class Appreciations:
         :return: The appreciation of student1 on student2
         :rtype: str
         """
+        return self.appreciations[student1][student2]
 
-
-def retrieveAppreciations():
-    with open('preferences.csv') as preferences:
+def retrieveAppreciationsCSV(csv_file):
+    """
+    Retrieve the appreciations from a csv file
+    :param csv_file: file location
+    :type csv_file: str
+    :return: The Appreciations retrieved from the CSV file
+    :rtype: Appreciations
+    """
+    with open(csv_file) as preferences:
         csv_reader = csv.reader(preferences, delimiter=',')
-        line_count = 0
-        nameCorrelation = {0: ''}
+        row_count = 0
+        studentNumbers = {0: ''}
         appreciations = []
 
         for row in csv_reader:
-            if line_count == 0:  # Retrieve student names
+            if row_count == 0:  # Retrieve student names
                 for pos, name in enumerate(row):
-                    nameCorrelation[pos - 1] = name
-                line_count += 1
+                    studentNumbers[pos - 1] = name
+                row_count += 1
             else:
                 row.pop(0)
                 appreciations.append(row)
-                line_count += 1
-        del nameCorrelation[-1]
-        return nameCorrelation, appreciations
+                row_count += 1
+        del studentNumbers[-1]
+        return Appreciations(studentNumbers, appreciations)
 
 
-nameCorrelation, appreciations = retrieveAppreciations()
+appreciations = retrieveAppreciationsCSV('preferences.csv')
+print(appreciations.studentNumbers)
+for row in appreciations.appreciations:
+    print(row)
 
-print(appreciations)
+print(appreciations.getAppreciation(1,2))
