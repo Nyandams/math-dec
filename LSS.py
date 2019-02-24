@@ -47,7 +47,7 @@ def orderRelationship(appreciation1, appreciation2):
     :type appreciation1: str
     :type appreciation2: str
     :return: The Appreciations in order
-    :rtype: List
+    :rtype: list
     """
     order = []
 
@@ -77,6 +77,9 @@ def orderRelationship(appreciation1, appreciation2):
         order = [appreciation2, appreciation1]
 
     return order
+
+
+def orderGroup():
 
 
 class Appreciations:
