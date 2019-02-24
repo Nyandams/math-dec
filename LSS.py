@@ -48,7 +48,7 @@ def orderRelationship(appreciation1, appreciation2):
     :type appreciation1: str
     :type appreciation2: str
     :return: The Appreciations in order
-    :rtype: List
+    :rtype: list
     """
     order = []
 
@@ -103,7 +103,7 @@ class Appreciations:
         :type student1: int
         :type student2: int
         :return: The appreciation of student1 on student2
-        :rtype: str
+        :rtype: list
         """
         return self.appreciations[student1][student2]
 
@@ -194,6 +194,8 @@ class Repartitions:
         """
         #we get all the combinaison of group of 3 people
         print(self.combinations.combinaison_3)
+        for comb in self.combinations.combinaison_3:
+            print
 
         #then we get the combinaison of
 
