@@ -1,6 +1,20 @@
 import csv
 import itertools
+import operator as op
+from functools import reduce
 
+def ncr(n, k):
+    """
+    n choose k
+    :param n:
+    :param k:
+    :return: the number of n choose r
+    :rtype: int
+    """
+    k = min(k, n-k)
+    numer = reduce(op.mul, range(n, n-k, -1), 1)
+    denom = reduce(op.mul, range(1, k+1), 1)
+    return numer / denom
 
 def retrieveAppreciationsCSV(csv_file, number_of_student):
     """
@@ -204,23 +218,45 @@ class Repartitions:
         students = []
         for key, value in appreciations.studentNumbers.items():
             students.append(key)
-
+        self.students = students
         self.combinations = Combinations(students)
         self.combinations.generateAllCombination()
-
+        self.appreciations = appreciations
         self.repartitions = []
         self.nb_g2 = nb_project - (len(students) - 2*nb_project)
         self.nb_g3 = nb_project - self.nb_g2
+
+    def addRepartition(self, repartition):
+        """
+        Add a repartition to the list of repartitions
+        :param repartition: a repartition
+        :type repartition: Repartition
+        """
+        self.repartitions.append(repartition)
 
     def generateRepartitions(self):
         """
         Generate all the repartitions
         """
         #we get all the combinaison of group of 3 people
-        combi itertools.combinations(self.combinations.combinaison_3, self.nb_g3 )
+        combi_g3 = itertools.combinations(self.combinations.combination_3, self.nb_g3)
 
 
         #then we get the combinaison of
+        nb_combi2 = ncr(len(self.students) - 3*self.nb_g3,2)
+        for repart_g3 in combi_g3:
+            remaining_item = self.students.copy()
+            for gp in repart_g3:
+                for student in range(3):
+                    remaining_item.remove(gp[student])
+
+            remaining_combinations = itertools.combinations(remaining_item, 2)
+            combi_remaining_g2 = itertools.combinations(remaining_combinations, int(self.nb_g2))
+
+            for repart_g2 in combi_remaining_g2:
+                repartition_tmp = Repartition(self.appreciations, list(repart_g3) + list(repart_g2))
+                self.addRepartition(repartition_tmp)
+
 
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions  = Repartitions(appreciations, 5)
