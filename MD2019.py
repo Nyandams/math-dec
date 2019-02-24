@@ -5,15 +5,22 @@ import subprocess
 """
     This script run other groups script.
 
+    :reference: Rendu numéro 4.
+
     :author: Lucas Sardois
+    :date: 24/02/2019
     :version: 1.0.0
 """
+
+# ==================================================================== #
 
 # The report number beeing processed
 report_number = 4
 
 # The maximum time a group can take to run their script, in seconds
 max_compute_time = 8.5
+
+# ==================================================================== #
 
 # Check that the script is run with the -EXT argument
 if len(sys.argv) < 2:
@@ -60,8 +67,26 @@ for group_acronym in directory_list:
         print("The file " + group_acronym + ".py doesn't exists")
         continue
 
+    # Run the group' script
     args = [ "python", prog_path, "-" + ext]
-    process = subprocess.Popen(args)
+    process = subprocess.Popen(args, stderr=subprocess.PIPE)
 
-    out, err = process.communicate()
-    print(out, err)
+    stderr = None
+
+    # Try to get errors back from the script with a timeout
+    try:
+        _, stderr = process.communicate(timeout=1)
+    except subprocess.TimeoutExpired:
+        # In the case where the script was too long, 
+        # just kill it and process the next group
+        print("Script was too long")
+        process.kill()
+        continue
+
+    # If stderr is not None then an error occured in 
+    # the script pass to the next script
+    if stderr is not None:
+        print(stderr.decode("utf-8"))
+        continue
+
+    
