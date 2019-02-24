@@ -80,10 +80,6 @@ def orderRelationship(appreciation1, appreciation2):
     return order
 
 
-def orderGroup():
-
-
-
 class Appreciations:
     """
     Class Appreciations is responsible for access to the appreciation of one student on another
@@ -168,6 +164,30 @@ class Repartition:
         :type repartition: list
         """
 
+    def getMedianAppreciation(self):
+        """
+        Get the median appreciation of the repartition
+        :return: the appreciation (str)
+        """
+        appreciation = ['AR', 'I', 'P', 'AB', 'B', 'TB']
+        listAppreciation = []
+        median = 0.0
+        currentMention = -1
+
+        #We get the list of all the appreciations of this repartition
+        for repart in self.repartition:
+            for student in repart:
+                for otherStudent in repart:
+                    if student != otherStudent:
+                        listAppreciation.append(self.appreciations.getAppreciation(student, otherStudent))
+
+        while median < 0.5:
+            currentMention += 1
+            median += (listAppreciation.count(appreciation[currentMention]) / len(listAppreciation))
+
+        return appreciation[currentMention]
+
+
 class Repartitions:
     """
     Class Repartitions is responsible of the creation of all the Repartitions
@@ -205,3 +225,6 @@ class Repartitions:
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions  = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
+
+repartition = Repartition(appreciations, [[0,1,2], [3,4,5]])
+print(repartition.getMedianAppreciation())
