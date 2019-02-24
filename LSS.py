@@ -1,6 +1,7 @@
 import csv
 import itertools
 
+
 def retrieveAppreciationsCSV(csv_file, number_of_student):
     """
     Retrieve the appreciations from a csv file
@@ -132,14 +133,20 @@ class Repartition:
     Class Repartition correspond to one of the Repartition that exists
     """
 
-    def __init__(self, appreciations):
+    def __init__(self, appreciations, repartition = None):
         """
         Initialize a new repartition
         :param appreciations: all the appreciations
+        :param repartition: the repartition
         :type appreciations: Appreciations
+        :type repartitions: list
         """
-        self.repartition   = []
         self.appreciations = appreciations
+        if repartitions is None:
+            self.repartition = []
+        else:
+            self.repartition = repartition
+
 
     def addGroup(self, group):
         """
@@ -149,6 +156,13 @@ class Repartition:
         :return: nothing
         """
         self.repartition.append(group)
+
+    def setRepartition(self, repartition):
+        """
+        Set the repartition
+        :param repartition: set the repartition
+        :type repartition: list
+        """
 
 class Repartitions:
     """
@@ -174,7 +188,15 @@ class Repartitions:
         self.nb_g2 = nb_project - (len(students) - 2*nb_project)
         self.nb_g3 = nb_project - self.nb_g2
 
+    def generateRepartitions(self):
+        """
+        Generate all the repartitions
+        """
+        #we get all the combinaison of group of 3 people
+        print(self.combinations.combinaison_3)
 
+        #then we get the combinaison of
 
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions  = Repartitions(appreciations, 5)
+repartitions.generateRepartitions()
