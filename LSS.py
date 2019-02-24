@@ -39,6 +39,46 @@ def retrieveAppreciationsCSV(csv_file, number_of_student):
         return Appreciations(subStudentNumbers, appreciations)
 
 
+def orderRelationship(appreciation1, appreciation2):
+    """
+    Classify appreciations by the order relationship
+    :param appreciation1: appreciation of the first student
+    :param appreciation2: appreciation of the second student
+    :type appreciation1: str
+    :type appreciation2: str
+    :return: The Appreciations in order
+    :rtype: List
+    """
+    order = []
+
+    if appreciation1 == 'TB':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'TB':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'AR':
+        order = [appreciation2, appreciation1]
+    elif appreciation2 == 'AR':
+        order = [appreciation1, appreciation2]
+    elif appreciation1 == 'B':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'B':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'AB':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'AB':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'P':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'P':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'I':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'I':
+        order = [appreciation2, appreciation1]
+
+    return order
+
+
 class Appreciations:
     """
     Class Appreciations is responsible for access to the appreciation of one student on another
