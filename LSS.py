@@ -1,30 +1,5 @@
 import csv
-
-class Appreciations:
-    """
-    Class Appreciations is responsible for access to the appreciation of one student on another
-    """
-    def __init__(self, studentNumbers, appreciations):
-        """
-        :param studentNumbers: A dictionary key:studentNumber
-        :param appreciations: All the appreciations of the strudents
-        :type studentNumbers: dict
-        :type appreciations: list
-        """
-        self.studentNumbers = studentNumbers
-        self.appreciations  = appreciations
-
-    def getAppreciation(self, student1, student2):
-        """
-        Get the appreciation of student1 on student2
-        :param student1: The student who gave his appreciation
-        :param student2: The student on whom an appreciation has been given
-        :type student1: int
-        :type student2: int
-        :return: The appreciation of student1 on student2
-        :rtype: str
-        """
-        return self.appreciations[student1][student2]
+import itertools
 
 def retrieveAppreciationsCSV(csv_file):
     """
@@ -53,9 +28,87 @@ def retrieveAppreciationsCSV(csv_file):
         return Appreciations(studentNumbers, appreciations)
 
 
-appreciations = retrieveAppreciationsCSV('preferences.csv')
-print(appreciations.studentNumbers)
-for row in appreciations.appreciations:
-    print(row)
+class Appreciations:
+    """
+    Class Appreciations is responsible for access to the appreciation of one student on another
+    """
+    def __init__(self, studentNumbers, appreciations):
+        """
+        :param studentNumbers: A dictionary key:studentNumber
+        :param appreciations: All the appreciations of the strudents
+        :type studentNumbers: dict
+        :type appreciations: list
+        """
+        self.studentNumbers = studentNumbers
+        self.appreciations  = appreciations
 
-print(appreciations.getAppreciation(1,2))
+    def getAppreciation(self, student1, student2):
+        """
+        Get the appreciation of student1 on student2
+        :param student1: The student who gave his appreciation
+        :param student2: The student on whom an appreciation has been given
+        :type student1: int
+        :type student2: int
+        :return: The appreciation of student1 on student2
+        :rtype: str
+        """
+        return self.appreciations[student1][student2]
+
+class Combinations:
+    """
+    Class Combinaisons has the responsability to generate all the possible combination
+    """
+    def __init__(self, students):
+        """
+        :param students: A list of all the students
+        :type students: list
+        """
+        self.students      = students
+        self.combinaison_2 = []
+        self.combinaison_3 = []
+
+    def generateAllCombination(self):
+        """
+        Generate all the combinations possible
+        :return:
+        """
+        self.combinaison_2 = itertools.combinations(self.students, 2)
+        self.combinaison_3 = itertools.combinations(self.students, 3)
+
+class Repartition:
+    """
+    Class Repartition correspond to one of the Repartition that exists
+    """
+
+    def __init__(self):
+        """
+        initialize a new repartition
+        """
+        self.repartition = []
+
+    def addGroup(self, group):
+        """
+        Add a group to the repartition
+        :param group: a group we want to add to the repartition
+        :type group: list
+        :return: nothing
+        """
+        self.repartition.append(group)
+
+
+
+
+
+appreciations = retrieveAppreciationsCSV('preferences.csv')
+
+students = []
+for key, value in appreciations.studentNumbers.items():
+    students.append(key)
+
+combination = Combinations(students)
+combination.generateAllCombination()
+for comb in combination.combinaison_2:
+    print(comb)
+
+for comb in combination.combinaison_3:
+    print(comb)
