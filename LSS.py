@@ -262,5 +262,8 @@ appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions  = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
 
-repartition = Repartition(appreciations, [[0,1,2], [3,4,5]])
-print(repartition.getMedianAppreciation())
+for repartition in repartitions.repartitions:
+    repartition.getMedianAppreciation()
+
+#repartition = Repartition(appreciations, [[0,1,2], [3,4,5]])
+#print(repartition.getMedianAppreciation())
