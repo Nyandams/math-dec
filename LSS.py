@@ -3,7 +3,6 @@ import itertools
 import operator as op
 from functools import reduce
 import time
-import sys
 
 def ncr(n, k):
     """
@@ -350,12 +349,11 @@ class Repartitions:
 
 
 
-#start_time = time.time()
-ext = sys.argv[1][1:]
-appreciations = retrieveAppreciationsCSV(ext, 11)
+start_time = time.time()
+appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
 
 
-#print("--- %s seconds ---" % (time.time() - start_time))
+print("--- %s seconds ---" % (time.time() - start_time))
 
