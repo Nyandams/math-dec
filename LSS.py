@@ -2,8 +2,7 @@ import csv
 import itertools
 import operator as op
 from functools import reduce
-
-
+import time
 def ncr(n, k):
     """
     n choose k
@@ -12,6 +11,7 @@ def ncr(n, k):
     :return: the number of n choose r
     :rtype: int
     """
+
     k = min(k, n - k)
     numer = reduce(op.mul, range(n, n - k, -1), 1)
     denom = reduce(op.mul, range(1, k + 1), 1)
@@ -314,35 +314,21 @@ class Repartitions:
         """
         Generate all the repartitions
         """
-        # we get all the combinaison of group of 3 people
-
-        repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
-        print(len(repartitions_g3))
-        print(repartitions_g3[0])
-        exit(5)
-        for first_combi_g3 in self.combinations.combination_3:
-            print(first_combi_g3)
-            print("--------")
-            sub_combi_g3 = list(self.combinations.combination_3)
-            print(sub_combi_g3)
-            print("--------")
-            print(sub_combi_g3[8:])
-
-            for x in len(first_combi_g3):
-                combi_g3 = itertools.combinations(self.combinations.combination_3, self.nb_g3)
-
-        # then we get the combinaison of
         max_appreciation = 'AR'
-        for repart_g3 in combi_g3:
-            remaining_item = self.students.copy()
-            for gp in repart_g3:
-                for student in range(3):
-                    remaining_item.remove(gp[student])
+        # we get all the combinaison of group of 3 people
+        repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
 
-            remaining_combinations = itertools.combinations(remaining_item, 2)
-            combi_remaining_g2 = itertools.combinations(remaining_combinations, int(self.nb_g2))
-            for repart_g2 in combi_remaining_g2:
-                repartition_tmp = Repartition(self.appreciations, list(repart_g3) + list(repart_g2))
+        for rep_g3 in repartitions_g3:
+            remaining_students = self.students.copy()
+            for gp in rep_g3:
+                for student in gp:
+                    remaining_students.remove(student)
+
+            #and we complete the repartition with groups of 2
+            combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
+            repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
+            for rep_g2 in repartitions_g2:
+                repartition_tmp = Repartition(self.appreciations, list(rep_g3) + list(rep_g2))
                 medianAppreciation = repartition_tmp.getMedianAppreciation()
 
                 if superior_appreciation(medianAppreciation, max_appreciation):
@@ -353,12 +339,19 @@ class Repartitions:
                         self.repartitions.append(repartition_tmp)
                         max_appreciation = medianAppreciation
 
+
         print(len(self.repartitions))
         print(self.repartitions[0].repartition)
 
 
+
+start_time = time.time()
+
+
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
-repartitions = Repartitions(appreciations, 5)
+repartitions = Repartitions(appreciations, 4)
 repartitions.generateRepartitions()
 
+
+print("--- %s seconds ---" % (time.time() - start_time))
 
