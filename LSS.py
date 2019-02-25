@@ -315,6 +315,7 @@ class Repartitions:
         """
         Generate all the repartitions
         """
+
         max_appreciation = 'AR'
         # we get all the combinaison of group of 3 people
         repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
@@ -340,20 +341,27 @@ class Repartitions:
                         self.repartitions.append(repartition_tmp)
                         max_appreciation = medianAppreciation
 
-
         list_affichage = []
         for repartition in self.repartitions:
-            list_affichage.append(repartition.repartition)
+            repartition_numEtu = []
+            for group in repartition.repartition:
+                group_numEtu = []
+                for idStudent in group:
+                    group_numEtu.append(self.appreciations.studentNumbers[idStudent])
+                repartition_numEtu.append(group_numEtu)
 
-        print(list_affichage)
+            list_affichage.append(repartition_numEtu)
+
+        return list_affichage
 
 
 
 start_time = time.time()
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
-repartitions = Repartitions(appreciations, 5)
-repartitions.generateRepartitions()
-
+repartitions = Repartitions(appreciations, 4)
+repartitions_obtenues = repartitions.generateRepartitions()
+print(len(repartitions_obtenues))
+#print(repartitions_obtenues)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
