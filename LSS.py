@@ -93,6 +93,44 @@ def orderRelationship(appreciation1, appreciation2):
 
     return order
 
+def superior_appreciation(appreciation1, appreciation2):
+    """
+    Return true if appreciation1 >= appreciation2
+    :param appreciation1: first appreciation
+    :param appreciation2: second appreciation
+    :type appreciation1: str
+    :type appreciation2: str
+    :return: The Appreciations in order
+    :rtype: bool
+    """
+    order = []
+
+    if appreciation1 == 'TB':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'TB':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'AR':
+        order = [appreciation2, appreciation1]
+    elif appreciation2 == 'AR':
+        order = [appreciation1, appreciation2]
+    elif appreciation1 == 'B':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'B':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'AB':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'AB':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'P':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'P':
+        order = [appreciation2, appreciation1]
+    elif appreciation1 == 'I':
+        order = [appreciation1, appreciation2]
+    elif appreciation2 == 'I':
+        order = [appreciation2, appreciation1]
+
+    return order[0] == appreciation1
 
 class Appreciations:
     """
@@ -131,8 +169,8 @@ class Combinations:
         :type students: list
         """
         self.students      = students
-        self.combinaison_2 = []
-        self.combinaison_3 = []
+        self.combination_2 = []
+        self.combination_3_3 = []
 
     def generateAllCombination(self):
         """
@@ -239,11 +277,18 @@ class Repartitions:
         Generate all the repartitions
         """
         #we get all the combinaison of group of 3 people
-        combi_g3 = itertools.combinations(self.combinations.combination_3, self.nb_g3)
+        print(list(self.combinations.combination_3))
+        exit(5)
+        for first_combi_g3 in self.combinations.combination_3:
+            sub_combi_g3 = list(self.combinations.combination_3).copy()
+            sub_combi_g3.del(10:)
+            for x in len(first_combi_g3):
+                combi_g3 = itertools.combinations(self.combinations.combination_3, self.nb_g3)
+
 
 
         #then we get the combinaison of
-        nb_combi2 = ncr(len(self.students) - 3*self.nb_g3,2)
+        max_appreciation = 'AR'
         for repart_g3 in combi_g3:
             remaining_item = self.students.copy()
             for gp in repart_g3:
@@ -252,18 +297,24 @@ class Repartitions:
 
             remaining_combinations = itertools.combinations(remaining_item, 2)
             combi_remaining_g2 = itertools.combinations(remaining_combinations, int(self.nb_g2))
-
             for repart_g2 in combi_remaining_g2:
                 repartition_tmp = Repartition(self.appreciations, list(repart_g3) + list(repart_g2))
-                self.addRepartition(repartition_tmp)
+                medianAppreciation = repartition_tmp.getMedianAppreciation()
+
+                if superior_appreciation(medianAppreciation, max_appreciation):
+                    if medianAppreciation == max_appreciation:
+                        self.repartitions.append(repartition_tmp)
+                    else:
+                        self.repartitions.clear()
+                        self.repartitions.append(repartition_tmp)
+                        max_appreciation = medianAppreciation
+
+        print(len(self.repartitions))
+        print(self.repartitions[0].repartition)
 
 
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
 repartitions  = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
 
-for repartition in repartitions.repartitions:
-    repartition.getMedianAppreciation()
 
-#repartition = Repartition(appreciations, [[0,1,2], [3,4,5]])
-#print(repartition.getMedianAppreciation())
