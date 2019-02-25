@@ -3,7 +3,6 @@ import itertools
 import operator as op
 from functools import reduce
 import time
-import sys
 
 def ncr(n, k):
     """
@@ -316,21 +315,18 @@ class Repartitions:
         """
         Generate all the repartitions
         """
+
         max_appreciation = 'AR'
         # we get all the combinaison of group of 3 people
         repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
 
-        for rep_g3 in repartitions_g3:
-            remaining_students = self.students.copy()
-            for gp in rep_g3:
-                for student in gp:
-                    remaining_students.remove(student)
 
-            #and we complete the repartition with groups of 2
+        if self.nb_g3 == 0: #case where we don't have groups of 3
+            remaining_students = self.students.copy()
             combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
             repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
             for rep_g2 in repartitions_g2:
-                repartition_tmp = Repartition(self.appreciations, list(rep_g3) + list(rep_g2))
+                repartition_tmp = Repartition(self.appreciations, list(rep_g2))
                 medianAppreciation = repartition_tmp.getMedianAppreciation()
 
                 if superior_appreciation(medianAppreciation, max_appreciation):
@@ -341,21 +337,63 @@ class Repartitions:
                         self.repartitions.append(repartition_tmp)
                         max_appreciation = medianAppreciation
 
+        else:  #case where we have groups of 3
+            for rep_g3 in repartitions_g3:
 
+                if int(self.nb_g2) == 0:  #case where we have only group of 3
+                    repartition_tmp = Repartition(self.appreciations, list(rep_g3))
+                    medianAppreciation = repartition_tmp.getMedianAppreciation()
+
+                    if superior_appreciation(medianAppreciation, max_appreciation):
+                        if medianAppreciation == max_appreciation:
+                            self.repartitions.append(repartition_tmp)
+                        else:
+                            self.repartitions.clear()
+                            self.repartitions.append(repartition_tmp)
+                            max_appreciation = medianAppreciation
+                else:
+                    remaining_students = self.students.copy()
+                    for gp in rep_g3:
+                        for student in gp:
+                            remaining_students.remove(student)
+
+                    #and we complete the repartition with groups of 2
+                    combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
+                    repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
+                    for rep_g2 in repartitions_g2:
+                        repartition_tmp = Repartition(self.appreciations, list(rep_g3) + list(rep_g2))
+                        medianAppreciation = repartition_tmp.getMedianAppreciation()
+
+                        if superior_appreciation(medianAppreciation, max_appreciation):
+                            if medianAppreciation == max_appreciation:
+                                self.repartitions.append(repartition_tmp)
+                            else:
+                                self.repartitions.clear()
+                                self.repartitions.append(repartition_tmp)
+                                max_appreciation = medianAppreciation
+
+        #we gather the students numbers in order to send the results
         list_affichage = []
         for repartition in self.repartitions:
-            list_affichage.append(repartition.repartition)
+            repartition_numEtu = []
+            for group in repartition.repartition:
+                group_numEtu = []
+                for idStudent in group:
+                    group_numEtu.append(self.appreciations.studentNumbers[idStudent])
+                repartition_numEtu.append(group_numEtu)
 
-        print(list_affichage)
+            list_affichage.append(repartition_numEtu)
+
+        return list_affichage
 
 
 
-#start_time = time.time()
-ext = sys.argv[1][1:]
-appreciations = retrieveAppreciationsCSV(ext, 11)
-repartitions = Repartitions(appreciations, 5)
-repartitions.generateRepartitions()
+start_time = time.time()
+appreciations = retrieveAppreciationsCSV('preferences.csv', 9)
+repartitions = Repartitions(appreciations, 3)
+repartitions_obtenues = repartitions.generateRepartitions()
+print(len(repartitions_obtenues))
+#print(repartitions_obtenues)
 
-
-#print("--- %s seconds ---" % (time.time() - start_time))
+print("--- %s seconds ---" % (time.time() - start_time))
 
