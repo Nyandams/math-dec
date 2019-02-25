@@ -387,6 +387,11 @@ class Repartitions:
         return list_affichage
 
 def createCSVFile(repartitions):
+    """
+    Write the CSV file
+    :param repartitions: list of repartitions to write
+    :return:
+    """
     with open('LSS.csv', 'w', newline="") as csvfile:
         filewriter = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for rep in repartitions:
