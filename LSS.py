@@ -1,23 +1,34 @@
 import csv
 import itertools
-import operator as op
-from functools import reduce
 import time
 
-def ncr(n, k):
-    """
-    n choose k
-    :param n:
-    :param k:
-    :return: the number of n choose r
-    :rtype: int
-    """
 
-    k = min(k, n - k)
-    numer = reduce(op.mul, range(n, n - k, -1), 1)
-    denom = reduce(op.mul, range(1, k + 1), 1)
-    return numer / denom
+def printSatisfactionRepartition(repartition):
+    """
+    Print the satisfaction of each group in a repartition
+    :param repartition: a repartion
+    :type repartition: Repartition
+    """
+    for group in repartition.repartition:
+        pref = []
+        students = []
+        for student in group:
+            students.append(student)
 
+        if len(group) == 2:
+            pref1 = repartition.appreciations.getAppreciation(students[0], students[1])
+            pref2 = repartition.appreciations.getAppreciation(students[1], students[0])
+            pref.append((pref1, pref2))
+        else:
+            pref1 = repartition.appreciations.getAppreciation(students[0], students[1])
+            pref2 = repartition.appreciations.getAppreciation(students[1], students[0])
+            pref3 = repartition.appreciations.getAppreciation(students[2], students[0])
+            pref4 = repartition.appreciations.getAppreciation(students[0], students[2])
+            pref5 = repartition.appreciations.getAppreciation(students[1], students[2])
+            pref6 = repartition.appreciations.getAppreciation(students[2], students[1])
+
+            pref.append((pref1, pref2, pref3, pref4, pref5, pref6))
+        print(pref)
 
 def retrieveAppreciationsCSV(csv_file, number_of_student):
     """
@@ -68,11 +79,12 @@ def removeTripletFromCombinaison(combinaisons, triplet):
     """
     i = 0
     while i < len(combinaisons):
-        if (triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i] or triplet[2] in combinaisons[i]):
+        if triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i] or triplet[2] in combinaisons[i]:
             combinaisons.remove(combinaisons[i])
         else:
-            i+=1
+            i += 1
     return combinaisons
+
 
 def removeCoupleFromCombinaison(combinaisons, triplet):
     """
@@ -86,11 +98,12 @@ def removeCoupleFromCombinaison(combinaisons, triplet):
     """
     i = 0
     while i < len(combinaisons):
-        if (triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i]):
+        if triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i]:
             combinaisons.remove(combinaisons[i])
         else:
-            i+=1
+            i += 1
     return combinaisons
+
 
 def generateAllGroups(combinaisons, nbGroup):
     """
@@ -112,7 +125,7 @@ def generateAllGroups(combinaisons, nbGroup):
                 removeTripletFromCombinaison(remaining_combi_tmp, gp)
             else:
                 removeCoupleFromCombinaison(remaining_combi_tmp, gp)
-            sub_repartitions_tmp = generateAllGroups(remaining_combi_tmp,nbGroup - 1)
+            sub_repartitions_tmp = generateAllGroups(remaining_combi_tmp, nbGroup - 1)
             if len(sub_repartitions_tmp) == 0:
                 repartitions.append(rep_tmp)
             else:
@@ -221,6 +234,7 @@ class Combinations:
         self.combination_2 = list(itertools.combinations(self.students, 2))
         self.combination_3 = list(itertools.combinations(self.students, 3))
 
+
 class Repartition:
     """
     Class Repartition correspond to one of the Repartition that exists
@@ -256,6 +270,7 @@ class Repartition:
         :type repartition: list
         """
 
+
     def getMedianAppreciation(self):
         """
         Get the median appreciation of the repartition
@@ -279,6 +294,25 @@ class Repartition:
 
         return appreciation[currentMention]
 
+    def get_lower_appreciation(self, appreciation):
+        """
+        Return the percentage of appreciation lower than the argument
+        :param appreciation: an appreciation
+        :return: a percentage
+        :rtype: float
+        """
+        count_lower_appreciation = 0
+        count_total = 0
+        for group in self.repartition:
+            for student in group:
+                for otherStudent in group:
+                    if student != otherStudent:
+                        count_total += 1
+                        if superior_appreciation(self.appreciations.getAppreciation(student, otherStudent), appreciation) == False:
+                            count_lower_appreciation += 1
+
+        return count_lower_appreciation/count_total
+
 
 class Repartitions:
     """
@@ -292,6 +326,7 @@ class Repartitions:
         :param nb_project: number of group we need to form
         :type appreciations: Appreciations
         :type nb_project: int
+        :return: a list of repartition with the students number
         """
         students = []
         for key, value in appreciations.studentNumbers.items():
@@ -302,7 +337,6 @@ class Repartitions:
         self.repartitions = []
         self.nb_g2 = nb_project - (len(students) - 2 * nb_project)
         self.nb_g3 = nb_project - self.nb_g2
-
     def addRepartition(self, repartition):
         """
         Add a repartition to the list of repartitions
@@ -318,10 +352,9 @@ class Repartitions:
 
         max_appreciation = 'AR'
         # we get all the combinaison of group of 3 people
-        repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
+        repartitions_g3 = generateAllGroups(self.combinations.combination_3, self.nb_g3)
 
-
-        if self.nb_g3 == 0: #case where we don't have groups of 3
+        if self.nb_g3 == 0:  # case where we don't have groups of 3
             remaining_students = self.students.copy()
             combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
             repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
@@ -337,10 +370,10 @@ class Repartitions:
                         self.repartitions.append(repartition_tmp)
                         max_appreciation = medianAppreciation
 
-        else:  #case where we have groups of 3
+        else:  # case where we have groups of 3
             for rep_g3 in repartitions_g3:
 
-                if int(self.nb_g2) == 0:  #case where we have only group of 3
+                if int(self.nb_g2) == 0:  # case where we have only group of 3
                     repartition_tmp = Repartition(self.appreciations, list(rep_g3))
                     medianAppreciation = repartition_tmp.getMedianAppreciation()
 
@@ -357,7 +390,7 @@ class Repartitions:
                         for student in gp:
                             remaining_students.remove(student)
 
-                    #and we complete the repartition with groups of 2
+                    # and we complete the repartition with groups of 2
                     combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
                     repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
                     for rep_g2 in repartitions_g2:
@@ -372,9 +405,25 @@ class Repartitions:
                                 self.repartitions.append(repartition_tmp)
                                 max_appreciation = medianAppreciation
 
-        #we gather the students numbers in order to send the results
-        list_affichage = []
+        min_lower_appreciation = 100
+
+        #we share the equality, we keep the one with the lowest rate of appreciation under max_appreciation
+        repartitions_equality_separation = []
         for repartition in self.repartitions:
+            if repartition.get_lower_appreciation(max_appreciation) < min_lower_appreciation:
+                repartitions_equality_separation.clear()
+                min_lower_appreciation = repartition.get_lower_appreciation(max_appreciation)
+                repartitions_equality_separation.append(repartition)
+            elif repartition.get_lower_appreciation(max_appreciation) == min_lower_appreciation:
+                repartitions_equality_separation.append(repartition)
+
+
+        print(len(self.repartitions))
+
+        # printSatisfactionRepartition(self.repartitions[0])
+        # we gather the students numbers in order to send the results
+        list_affichage = []
+        for repartition in repartitions_equality_separation:
             repartition_numEtu = []
             for group in repartition.repartition:
                 group_numEtu = []
@@ -383,14 +432,12 @@ class Repartitions:
                 repartition_numEtu.append(group_numEtu)
 
             list_affichage.append(repartition_numEtu)
-
         return list_affichage
 
 def createCSVFile(repartitions):
     """
     Write the CSV file
     :param repartitions: list of repartitions to write
-    :return:
     """
     with open('LSS.csv', 'w', newline="") as csvfile:
         filewriter = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -403,13 +450,14 @@ def createCSVFile(repartitions):
                 repartition.append(groupP)
             filewriter.writerow(repartition)
 
-
 start_time = time.time()
-appreciations = retrieveAppreciationsCSV('preferences.csv', 9)
-repartitions = Repartitions(appreciations, 3)
+appreciations = retrieveAppreciationsCSV('preferences.csv', 10)     # we define the number of students
+repartitions = Repartitions(appreciations, 4)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
-#print(len(repartitions_obtenues))
+print(str(len(repartitions_obtenues)) + " appreciations")
 print(repartitions_obtenues)
+# print(len(repartitions_obtenues))
+# print(repartitions_obtenues)
 
 createCSVFile(repartitions_obtenues)
 
