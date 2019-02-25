@@ -3,6 +3,7 @@ import itertools
 import operator as op
 from functools import reduce
 
+
 def ncr(n, k):
     """
     n choose k
@@ -11,10 +12,11 @@ def ncr(n, k):
     :return: the number of n choose r
     :rtype: int
     """
-    k = min(k, n-k)
-    numer = reduce(op.mul, range(n, n-k, -1), 1)
-    denom = reduce(op.mul, range(1, k+1), 1)
+    k = min(k, n - k)
+    numer = reduce(op.mul, range(n, n - k, -1), 1)
+    denom = reduce(op.mul, range(1, k + 1), 1)
     return numer / denom
+
 
 def retrieveAppreciationsCSV(csv_file, number_of_student):
     """
@@ -43,15 +45,81 @@ def retrieveAppreciationsCSV(csv_file, number_of_student):
                 row_count += 1
         del studentNumbers[-1]
 
-        #in order to retrieve only the number of student we want
+        # in order to retrieve only the number of student we want
         subStudentNumbers = {}
         for key in range(number_of_student):
             subStudentNumbers[key] = studentNumbers[key]
 
         del appreciations[number_of_student:]
 
-
         return Appreciations(subStudentNumbers, appreciations)
+
+
+def removeTripletFromCombinaison(combinaisons, triplet):
+    """
+    Remove all the combinaisons that contains one element of the triplet
+    :param combinaisons: the list of combinaison where we want to delete some combinaisons
+    :param triplet: the triplet of element we want to remove from combinaisons
+    :type combinaisons: list
+    :type triplet: tuple
+    :return: a list of combinaisons
+    :rtype: list
+    """
+    i = 0
+    while i < len(combinaisons):
+        if (triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i] or triplet[2] in combinaisons[i]):
+            combinaisons.remove(combinaisons[i])
+        else:
+            i+=1
+    return combinaisons
+
+def removeCoupleFromCombinaison(combinaisons, triplet):
+    """
+    Remove all the combinaisons that contains one element of the couple
+    :param combinaisons: the list of combinaison where we want to delete some combinaisons
+    :param triplet: the couple of element we want to remove from combinaisons
+    :type combinaisons: list
+    :type triplet: tuple
+    :return: a list of combinaisons
+    :rtype: list
+    """
+    i = 0
+    while i < len(combinaisons):
+        if (triplet[0] in combinaisons[i] or triplet[1] in combinaisons[i]):
+            combinaisons.remove(combinaisons[i])
+        else:
+            i+=1
+    return combinaisons
+
+def generateAllGroups(combinaisons, nbGroup):
+    """
+    Generate all the repartition possible from a list and with a number of group defined
+    :param combinaisons: All the combinaison
+    :param nbGroup: the number of group in each repartition
+    :type combinaisons: list
+    :type nbGroup: int
+    :return: all the repartition
+    :rtype: list
+    """
+    repartitions = []
+    if nbGroup != 0:
+        for gp in combinaisons:
+            rep_tmp = []
+            rep_tmp.append(gp)
+            remaining_combi_tmp = combinaisons.copy()
+            if (len(gp) == 3):
+                removeTripletFromCombinaison(remaining_combi_tmp, gp)
+            else:
+                removeCoupleFromCombinaison(remaining_combi_tmp, gp)
+            sub_repartitions_tmp = generateAllGroups(remaining_combi_tmp,nbGroup - 1)
+            if len(sub_repartitions_tmp) == 0:
+                repartitions.append(rep_tmp)
+            else:
+                for sub_rep in sub_repartitions_tmp:
+                    repartitions.append(rep_tmp + sub_rep)
+
+
+    return repartitions
 
 
 def orderRelationship(appreciation1, appreciation2):
@@ -93,6 +161,7 @@ def orderRelationship(appreciation1, appreciation2):
 
     return order
 
+
 def superior_appreciation(appreciation1, appreciation2):
     """
     Return true if appreciation1 >= appreciation2
@@ -132,10 +201,12 @@ def superior_appreciation(appreciation1, appreciation2):
 
     return order[0] == appreciation1
 
+
 class Appreciations:
     """
     Class Appreciations is responsible for access to the appreciation of one student on another
     """
+
     def __init__(self, studentNumbers, appreciations):
         """
         Initialize the Appreciations
@@ -145,7 +216,7 @@ class Appreciations:
         :type appreciations: list
         """
         self.studentNumbers = studentNumbers
-        self.appreciations  = appreciations
+        self.appreciations = appreciations
 
     def getAppreciation(self, student1, student2):
         """
@@ -159,33 +230,27 @@ class Appreciations:
         """
         return self.appreciations[student1][student2]
 
+
 class Combinations:
     """
     Class Combinaisons has the responsability to generate all the possible combination
     """
+
     def __init__(self, students):
         """
         :param students: A list of all the students
         :type students: list
         """
-        self.students      = students
-        self.combination_2 = []
-        self.combination_3_3 = []
-
-    def generateAllCombination(self):
-        """
-        Generate all the combinations possible
-        :return:
-        """
-        self.combination_2 = itertools.combinations(self.students, 2)
-        self.combination_3 = itertools.combinations(self.students, 3)
+        self.students = students
+        self.combination_2 = list(itertools.combinations(self.students, 2))
+        self.combination_3 = list(itertools.combinations(self.students, 3))
 
 class Repartition:
     """
     Class Repartition correspond to one of the Repartition that exists
     """
 
-    def __init__(self, appreciations, repartition = None):
+    def __init__(self, appreciations, repartition=None):
         """
         Initialize a new repartition
         :param appreciations: all the appreciations
@@ -198,7 +263,6 @@ class Repartition:
             self.repartition = []
         else:
             self.repartition = repartition
-
 
     def addGroup(self, group):
         """
@@ -226,7 +290,7 @@ class Repartition:
         median = 0.0
         currentMention = -1
 
-        #We get the list of all the appreciations of this repartition
+        # We get the list of all the appreciations of this repartition
         for repart in self.repartition:
             for student in repart:
                 for otherStudent in repart:
@@ -258,10 +322,9 @@ class Repartitions:
             students.append(key)
         self.students = students
         self.combinations = Combinations(students)
-        self.combinations.generateAllCombination()
         self.appreciations = appreciations
         self.repartitions = []
-        self.nb_g2 = nb_project - (len(students) - 2*nb_project)
+        self.nb_g2 = nb_project - (len(students) - 2 * nb_project)
         self.nb_g3 = nb_project - self.nb_g2
 
     def addRepartition(self, repartition):
@@ -276,18 +339,24 @@ class Repartitions:
         """
         Generate all the repartitions
         """
-        #we get all the combinaison of group of 3 people
-        print(list(self.combinations.combination_3))
+        # we get all the combinaison of group of 3 people
+
+        repartitions_g3 = generateAllGroups(self.combinations.combination_3,self.nb_g3)
+        print(len(repartitions_g3))
+        print(repartitions_g3[0])
         exit(5)
         for first_combi_g3 in self.combinations.combination_3:
-            sub_combi_g3 = list(self.combinations.combination_3).copy()
-            sub_combi_g3.del(10:)
+            print(first_combi_g3)
+            print("--------")
+            sub_combi_g3 = list(self.combinations.combination_3)
+            print(sub_combi_g3)
+            print("--------")
+            print(sub_combi_g3[8:])
+
             for x in len(first_combi_g3):
                 combi_g3 = itertools.combinations(self.combinations.combination_3, self.nb_g3)
 
-
-
-        #then we get the combinaison of
+        # then we get the combinaison of
         max_appreciation = 'AR'
         for repart_g3 in combi_g3:
             remaining_item = self.students.copy()
@@ -314,7 +383,7 @@ class Repartitions:
 
 
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
-repartitions  = Repartitions(appreciations, 5)
+repartitions = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
 
 
