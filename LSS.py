@@ -386,14 +386,32 @@ class Repartitions:
 
         return list_affichage
 
+def createCSVFile(repartitions):
+    """
+    Write the CSV file
+    :param repartitions: list of repartitions to write
+    :return:
+    """
+    with open('LSS.csv', 'w', newline="") as csvfile:
+        filewriter = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for rep in repartitions:
+            repartition = []
+            for group in rep:
+                groupP = ""
+                for student in group:
+                    groupP = groupP + ' ' + str(student)
+                repartition.append(groupP)
+            filewriter.writerow(repartition)
 
 
 start_time = time.time()
 appreciations = retrieveAppreciationsCSV('preferences.csv', 9)
 repartitions = Repartitions(appreciations, 3)
 repartitions_obtenues = repartitions.generateRepartitions()
-print(len(repartitions_obtenues))
-#print(repartitions_obtenues)
+#print(len(repartitions_obtenues))
+print(repartitions_obtenues)
+
+createCSVFile(repartitions_obtenues)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
