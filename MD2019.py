@@ -1,5 +1,7 @@
 import os
 import sys
+import csv
+import json
 import subprocess
 
 """
@@ -42,6 +44,9 @@ if not os.path.isdir(data_folder):
 # Construct the resultat folder
 resultat_folder = project_folder + "/RESULTATS"
 
+# Construct the resultat path
+resultat_path = resultat_folder + "/resultat" + ext + ".csv"
+
 # Check that the folder exists
 if not os.path.isdir(resultat_folder):
     raise FileNotFoundError("Resultat folder not found in: " + resultat_folder)
@@ -51,6 +56,9 @@ preference_path = data_folder + "/preferences" + ext + ".csv"
 
 # Construct the path to the group file
 group_path = resultat_folder + "/groupes" + ext + ".csv"
+
+# Group assignment for all groups
+result = { }
 
 # List all the folder in the project folder
 directory_list = os.listdir(project_folder)
@@ -69,13 +77,27 @@ for group_acronym in directory_list:
 
     # Run the group' script
     args = [ "python", prog_path, "-" + ext]
-    process = subprocess.Popen(args, stderr=subprocess.PIPE)
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stderr = None
 
     # Try to get errors back from the script with a timeout
     try:
-        _, stderr = process.communicate(timeout=1)
+        stdout, stderr = process.communicate(timeout=1)
+        if stdout is None:
+            print("Nothing sent back")
+            continue
+        
+        try:
+            stdout = stdout.decode("utf-8")
+            json_stdout = json.loads(stdout)
+        except:
+            print("Error while decoding infos, group didn't respected the norm")
+            continue
+        
+        result[group_acronym] = json_stdout
+        print(json_stdout)
+
     except subprocess.TimeoutExpired:
         # In the case where the script was too long, 
         # just kill it and process the next group
@@ -89,4 +111,17 @@ for group_acronym in directory_list:
         print(stderr.decode("utf-8"))
         continue
 
-    
+# Write in the CSV the result
+with open(resultat_path, mode="w+", newline="") as result_file:
+    result_writer = csv.writer(result_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+    for group_acronym in result:
+        assignments = result[group_acronym]
+        for assignment in assignments:
+            # Add the group acronym
+            assignment = [group_acronym] + assignment
+            result_writer.writerow(assignment)
+        
+        result_writer.writerow("")
+
+    result_file.close()

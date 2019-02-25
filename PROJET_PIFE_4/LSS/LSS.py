@@ -1,6 +1,8 @@
-import time
+import json
+import sys
 
-time.sleep(2)
+t = [ [ [1, 2, 3], [4, 5, 6] ] , [ [ 7, 8, 9], [ 10, 11, 12 ] ] ]
 
-print("hello")
-raise ValueError("blabla")
+json_str = json.dumps(t)
+
+sys.stdout.write(json_str)
