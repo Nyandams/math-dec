@@ -172,32 +172,7 @@ def superior_appreciation(appreciation1, appreciation2):
     :return: The Appreciations in order
     :rtype: bool
     """
-    order = []
-
-    if appreciation1 == 'TB':
-        order = [appreciation1, appreciation2]
-    elif appreciation2 == 'TB':
-        order = [appreciation2, appreciation1]
-    elif appreciation1 == 'AR':
-        order = [appreciation2, appreciation1]
-    elif appreciation2 == 'AR':
-        order = [appreciation1, appreciation2]
-    elif appreciation1 == 'B':
-        order = [appreciation1, appreciation2]
-    elif appreciation2 == 'B':
-        order = [appreciation2, appreciation1]
-    elif appreciation1 == 'AB':
-        order = [appreciation1, appreciation2]
-    elif appreciation2 == 'AB':
-        order = [appreciation2, appreciation1]
-    elif appreciation1 == 'P':
-        order = [appreciation1, appreciation2]
-    elif appreciation2 == 'P':
-        order = [appreciation2, appreciation1]
-    elif appreciation1 == 'I':
-        order = [appreciation1, appreciation2]
-    elif appreciation2 == 'I':
-        order = [appreciation2, appreciation1]
+    order = orderRelationship(appreciation1, appreciation2)
 
     return order[0] == appreciation1
 
