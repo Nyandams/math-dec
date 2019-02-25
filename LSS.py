@@ -3,6 +3,8 @@ import itertools
 import operator as op
 from functools import reduce
 import time
+
+
 def ncr(n, k):
     """
     n choose k
@@ -340,18 +342,19 @@ class Repartitions:
                         max_appreciation = medianAppreciation
 
 
-        print(len(self.repartitions))
-        print(self.repartitions[0].repartition)
+        list_affichage = []
+        for repartition in self.repartitions:
+            list_affichage.append(repartition.repartition)
+
+        print(list_affichage)
 
 
 
-start_time = time.time()
-
-
+#start_time = time.time()
 appreciations = retrieveAppreciationsCSV('preferences.csv', 11)
-repartitions = Repartitions(appreciations, 4)
+repartitions = Repartitions(appreciations, 5)
 repartitions.generateRepartitions()
 
 
-print("--- %s seconds ---" % (time.time() - start_time))
+#print("--- %s seconds ---" % (time.time() - start_time))
 
