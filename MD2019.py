@@ -70,44 +70,63 @@ for group_acronym in directory_list:
     print("Processing group " + group_acronym+ ": ")
     prog_path = project_folder + "/" + group_acronym + "/" + group_acronym + ".py"
 
-    # Check that the file to run exists
-    if not os.path.isfile(prog_path):
-        print("The file " + group_acronym + ".py doesn't exists")
+    if not os.path.exists(prog_path):
+        print("Can't load the file at: " + prog_path)
         continue
 
     # Run the group' script
-    args = [ "python", prog_path, "-" + ext]
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    args = [ "python3", prog_path, "-" + ext]
+    try:
+        process = subprocess.Popen(args, stderr=subprocess.PIPE)
+    except IOError:
+        print("Can't load the file at: " + prog_path)
+        continue
+    except subprocess.TimeoutExpired:
+        # In the case where the script was too long, 
+        # just kill it and process the next group
+        process.kill()
+        print("Script was too long")
+        continue
+    except:
+        process.kill()
+        print("Script crashed")
+        continue
 
     stderr = None
 
     # Try to get errors back from the script with a timeout
     try:
-        stdout, stderr = process.communicate(timeout=1)
-        if stdout is None:
-            print("Nothing sent back")
-            continue
-        
-        try:
-            stdout = stdout.decode("utf-8")
-            json_stdout = json.loads(stdout)
-        except:
-            print("Error while decoding infos, group didn't respected the norm")
-            continue
-        
-        result[group_acronym] = json_stdout
-        print(json_stdout)
-
-    except subprocess.TimeoutExpired:
-        # In the case where the script was too long, 
-        # just kill it and process the next group
-        print("Script was too long")
-        process.kill()
+        stdout, stderr = process.communicate(timeout=8)
+    except IOError:
+        print("Can't open the csv at: " + group_path)
+        continue
+    except:
+        print("Error while reading the csv file in: " + group_path)
         continue
 
-    # If stderr is not None then an error occured in 
-    # the script pass to the next script
-    if stderr is not None:
+    # Create the group acronym result set
+    result[group_acronym] = []
+
+    # Read the csv and save data for later
+    group_path = project_folder + "/" + group_acronym + "/" + group_acronym + ".csv"
+    try:
+        with open(group_path, newline='') as group_file:
+            result_reader = csv.reader(group_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            
+            for row in result_reader:
+                result[group_acronym].append(row)
+
+            # print(result[group_acronym])
+            group_file.close()
+
+            print("\nOK")
+    except IOError:
+        print("Couldn't read the csv at: " + group_path)
+        continue
+
+    # If stderr is not None then an error occured in
+    # print the error and pass to the next script
+    if stderr is not None and len(stderr) > 0:
         print(stderr.decode("utf-8"))
         continue
 
