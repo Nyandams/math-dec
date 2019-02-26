@@ -33,28 +33,32 @@ ext = sys.argv[1][1:]
 # Construct the path to the project folder
 project_folder = "PROJET_PIFE_" + str(report_number)
 
+# The python executable name it must python or python3
+python_exec = "python3"
+
 # Construct the data folder
-data_folder = project_folder + "\\DONNEES"
+data_folder = project_folder + "/DONNEES"
+data_folder = os.path.join(project_folder, "DONNEES")
 
 # Check that the folder exists
 if not os.path.isdir(data_folder):
     raise FileNotFoundError("Data folder not found in: " + data_folder)
 
 # Construct the resultat folder
-resultat_folder = project_folder + "\\RESULTATS"
+resultat_folder = project_folder + "/RESULTATS"
 
 # Construct the resultat path
-resultat_path = resultat_folder + "\\resultat" + ext + ".csv"
+resultat_path = resultat_folder + "/resultat" + ext + ".csv"
 
 # Check that the folder exists
 if not os.path.isdir(resultat_folder):
     raise FileNotFoundError("Resultat folder not found in: " + resultat_folder)
 
 # Construct the path to the preference file
-preference_path = data_folder + "\\preferences" + ext + ".csv"
+preference_path = data_folder + "/preferences" + ext + ".csv"
 
 # Construct the path to the group file
-group_path = resultat_folder + "\\groupes" + ext + ".csv"
+group_path = resultat_folder + "/groupes" + ext + ".csv"
 
 # Group assignment for all groups
 result = { }
@@ -67,15 +71,15 @@ directory_list.remove("RESULTATS")
 # For each group run thir script
 for group_acronym in directory_list:
     print("Processing group " + group_acronym + ": ")
-    group_folder = project_folder + "\\" + group_acronym
-    prog_path = group_folder + "\\" + group_acronym + ".py"
+    group_folder = project_folder + "/" + group_acronym
+    prog_path = group_folder + "/" + group_acronym + ".py"
 
     if not os.path.exists(prog_path):
         print("Can't load the script at: " + prog_path)
         continue
 
     # Run the group' script
-    args = ["python", group_acronym + ".py", "-" + ext]
+    args = [python_exec, group_acronym + ".py", "-" + ext]
     try:
         process = subprocess.Popen(args, stderr=subprocess.PIPE, cwd=group_folder)
     except IOError:
@@ -111,7 +115,7 @@ for group_acronym in directory_list:
     result[group_acronym] = []
 
     # Read the csv and save data for later
-    group_csv_path = project_folder + "\\" + group_acronym + "\\" + group_acronym + ".csv"
+    group_csv_path = project_folder + "/" + group_acronym + "/" + group_acronym + ".csv"
     try:
         with open(group_csv_path, newline='') as group_file:
             result_reader = csv.reader(group_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -127,6 +131,8 @@ for group_acronym in directory_list:
         _, value, traceback = sys.exc_info()
         print('Error opening the csv file %s: %s' % (value.filename, value.strerror))
         continue
+
+ext = sys.argv[1][1:]
 
 # Write in the CSV the result
 with open(resultat_path, mode="w+", newline="") as result_file:
