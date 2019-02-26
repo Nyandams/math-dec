@@ -30,7 +30,7 @@ def printSatisfactionRepartition(repartition):
             pref.append((pref1, pref2, pref3, pref4, pref5, pref6))
         print(pref)
 
-def retrieveAppreciationsCSV(csv_file, number_of_student):
+def retrieveAppreciationsCSV(csv_file, number_of_student = None):
     """
     Retrieve the appreciations from a csv file
     :param csv_file: file location
@@ -63,7 +63,8 @@ def retrieveAppreciationsCSV(csv_file, number_of_student):
             for key in range(number_of_student):
                 subStudentNumbers[key] = studentNumbers[key]
 
-            del appreciations[number_of_student:]
+            if number_of_student != None:
+                del appreciations[number_of_student:]
 
             return Appreciations(subStudentNumbers, appreciations)
     except IOError:
@@ -454,8 +455,11 @@ def createCSVFile(repartitions):
 
 start_time = time.time()
 ext = sys.argv[1][1:]
-appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv', 10)     # we define the number of students
-repartitions = Repartitions(appreciations, 4)  # we define the number of group we need to form
+appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv'    )     # we define the number of students
+print(len(appreciations.studentNumbers))
+exit(5)
+
+repartitions = Repartitions(appreciations)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
 print(str(len(repartitions_obtenues)) + " appreciations")
 print(repartitions_obtenues[0])
