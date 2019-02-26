@@ -234,7 +234,6 @@ class Combinations:
         self.combination_2 = list(itertools.combinations(self.students, 2))
         self.combination_3 = list(itertools.combinations(self.students, 3))
 
-
 class Repartition:
     """
     Class Repartition correspond to one of the Repartition that exists
@@ -270,7 +269,6 @@ class Repartition:
         :type repartition: list
         """
 
-
     def getMedianAppreciation(self):
         """
         Get the median appreciation of the repartition
@@ -282,10 +280,10 @@ class Repartition:
         currentMention = -1
 
         # We get the list of all the appreciations of this repartition
-        for repart in self.repartition:
-            for student in repart:
-                for otherStudent in repart:
-                    if student != otherStudent:
+        for group in self.repartition:
+            for student in group:
+                for otherStudent in group:
+                    if student != group:
                         listAppreciation.append(self.appreciations.getAppreciation(student, otherStudent))
 
         while median < 0.5:
@@ -337,6 +335,7 @@ class Repartitions:
         self.repartitions = []
         self.nb_g2 = nb_project - (len(students) - 2 * nb_project)
         self.nb_g3 = nb_project - self.nb_g2
+
     def addRepartition(self, repartition):
         """
         Add a repartition to the list of repartitions
