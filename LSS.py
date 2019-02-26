@@ -451,12 +451,14 @@ def createCSVFile(repartitions):
 
 start_time = time.time()
 appreciations = retrieveAppreciationsCSV('preferences.csv', 10)     # we define the number of students
-repartitions = Repartitions(appreciations, 5)  # we define the number of group we need to form
+repartitions = Repartitions(appreciations, 4)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
 print(str(len(repartitions_obtenues)) + " appreciations")
-print(repartitions_obtenues)
+print(repartitions_obtenues[0])
+print(repartitions_obtenues[0].sort())
 # print(len(repartitions_obtenues))
 # print(repartitions_obtenues)
+
 
 createCSVFile(repartitions_obtenues)
 

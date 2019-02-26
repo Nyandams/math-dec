@@ -1,7 +1,6 @@
 import os
 import sys
 import csv
-import json
 import subprocess
 
 """
@@ -35,27 +34,27 @@ ext = sys.argv[1][1:]
 project_folder = "PROJET_PIFE_" + str(report_number)
 
 # Construct the data folder
-data_folder = project_folder + "/DONNEES"
+data_folder = project_folder + "\\DONNEES"
 
 # Check that the folder exists
 if not os.path.isdir(data_folder):
     raise FileNotFoundError("Data folder not found in: " + data_folder)
 
 # Construct the resultat folder
-resultat_folder = project_folder + "/RESULTATS"
+resultat_folder = project_folder + "\\RESULTATS"
 
 # Construct the resultat path
-resultat_path = resultat_folder + "/resultat" + ext + ".csv"
+resultat_path = resultat_folder + "\\resultat" + ext + ".csv"
 
 # Check that the folder exists
 if not os.path.isdir(resultat_folder):
     raise FileNotFoundError("Resultat folder not found in: " + resultat_folder)
 
 # Construct the path to the preference file
-preference_path = data_folder + "/preferences" + ext + ".csv"
+preference_path = data_folder + "\\preferences" + ext + ".csv"
 
 # Construct the path to the group file
-group_path = resultat_folder + "/groupes" + ext + ".csv"
+group_path = resultat_folder + "\\groupes" + ext + ".csv"
 
 # Group assignment for all groups
 result = { }
@@ -67,22 +66,30 @@ directory_list.remove("RESULTATS")
 
 # For each group run thir script
 for group_acronym in directory_list:
-    print("Processing group " + group_acronym+ ": ")
-    prog_path = project_folder + "/" + group_acronym + "/" + group_acronym + ".py"
+    print("Processing group " + group_acronym + ": ")
+    group_folder = project_folder + "\\" + group_acronym
+    prog_path = group_folder + "\\" + group_acronym + ".py"
 
     if not os.path.exists(prog_path):
-        print("Can't load the file at: " + prog_path)
+        print("Can't load the script at: " + prog_path)
         continue
 
     # Run the group' script
-    args = [ "python3", prog_path, "-" + ext]
+    args = ["python", group_acronym + ".py", "-" + ext]
     try:
-        process = subprocess.Popen(args, stderr=subprocess.PIPE)
+        process = subprocess.Popen(args, stderr=subprocess.PIPE, cwd=group_folder)
     except IOError:
-        print("Can't load the file at: " + prog_path)
+        _, value, traceback = sys.exc_info()
+        print('Error opening %s: %s' % (value.filename, value.strerror))
         continue
+
+    stderr = None
+
+    # Try to get errors back from the script with a timeout
+    try:
+        stdout, stderr = process.communicate(timeout=max_compute_time)
     except subprocess.TimeoutExpired:
-        # In the case where the script was too long, 
+        # In the case where the script was too long,
         # just kill it and process the next group
         process.kill()
         print("Script was too long")
@@ -92,25 +99,21 @@ for group_acronym in directory_list:
         print("Script crashed")
         continue
 
-    stderr = None
+    # If stderr is not None then an error occured in
+    # print the error and pass to the next script
+    if stderr is not None and len(stderr) > 0:
+        print(stderr.decode("utf-8"))
+        continue
 
-    # Try to get errors back from the script with a timeout
-    try:
-        stdout, stderr = process.communicate(timeout=8)
-    except IOError:
-        print("Can't open the csv at: " + group_path)
-        continue
-    except:
-        print("Error while reading the csv file in: " + group_path)
-        continue
+    process.kill()
 
     # Create the group acronym result set
     result[group_acronym] = []
 
     # Read the csv and save data for later
-    group_path = project_folder + "/" + group_acronym + "/" + group_acronym + ".csv"
+    group_csv_path = project_folder + "\\" + group_acronym + "\\" + group_acronym + ".csv"
     try:
-        with open(group_path, newline='') as group_file:
+        with open(group_csv_path, newline='') as group_file:
             result_reader = csv.reader(group_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             
             for row in result_reader:
@@ -119,15 +122,10 @@ for group_acronym in directory_list:
             # print(result[group_acronym])
             group_file.close()
 
-            print("\nOK")
+            print("\nGROUP OK")
     except IOError:
-        print("Couldn't read the csv at: " + group_path)
-        continue
-
-    # If stderr is not None then an error occured in
-    # print the error and pass to the next script
-    if stderr is not None and len(stderr) > 0:
-        print(stderr.decode("utf-8"))
+        _, value, traceback = sys.exc_info()
+        print('Error opening the csv file %s: %s' % (value.filename, value.strerror))
         continue
 
 # Write in the CSV the result
