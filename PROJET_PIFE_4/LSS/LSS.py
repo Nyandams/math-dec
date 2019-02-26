@@ -57,16 +57,15 @@ def retrieveAppreciationsCSV(csv_file, number_of_student = None):
                     appreciations.append(row)
                     row_count += 1
             del studentNumbers[-1]
-
-            # in order to retrieve only the number of student we want
-            subStudentNumbers = {}
-            for key in range(number_of_student):
-                subStudentNumbers[key] = studentNumbers[key]
-
             if number_of_student != None:
+                # in order to retrieve only the number of student we want
+                subStudentNumbers = {}
+                for key in range(number_of_student):
+                    subStudentNumbers[key] = studentNumbers[key]
                 del appreciations[number_of_student:]
+                return Appreciations(subStudentNumbers, appreciations)
 
-            return Appreciations(subStudentNumbers, appreciations)
+            return Appreciations(studentNumbers, appreciations)
     except IOError:
         print("Error while loading the file")
         return None
@@ -321,7 +320,7 @@ class Repartitions:
     Class Repartitions is responsible of the creation of all the Repartitions
     """
 
-    def __init__(self, appreciations, nb_project):
+    def __init__(self, appreciations, nb_project = None):
         """
         Initialize the repartitions
         :param appreciations: All the appreciations retrieve
@@ -337,6 +336,13 @@ class Repartitions:
         self.combinations = Combinations(students)
         self.appreciations = appreciations
         self.repartitions = []
+        if nb_project == None:
+            modulo = len(appreciations.studentNumbers) %2
+            if modulo == 0:
+                nb_project = len(appreciations.studentNumbers)/2
+            elif modulo == 1:
+                nb_project = (len(appreciations.studentNumbers) - 1)/2
+
         self.nb_g2 = nb_project - (len(students) - 2 * nb_project)
         self.nb_g3 = nb_project - self.nb_g2
 
@@ -456,8 +462,7 @@ def createCSVFile(repartitions):
 start_time = time.time()
 ext = sys.argv[1][1:]
 appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv'    )     # we define the number of students
-print(len(appreciations.studentNumbers))
-exit(5)
+
 
 repartitions = Repartitions(appreciations)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
