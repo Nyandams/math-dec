@@ -222,6 +222,31 @@ class Appreciations:
         """
         return self.appreciations[student1][student2]
 
+    def get_threshold_appreciation(self, id_student, threshold):
+        """
+        Get the threshold appreciation of a student towards others students
+        :param id_student: number of the student
+        :param threshold: param of the euristic
+        :type id_student: int
+        :type threshold: float
+        :return: an appreciation
+        :rtype: str
+        """
+        appreciation = ['AR', 'I', 'P', 'AB', 'B', 'TB']
+        list_appreciation = []
+        th = 0.0
+        current_mention = -1
+
+        for i in range(len(self.studentNumbers)):
+            if i != id_student:
+                list_appreciation.append(self.getAppreciation(id_student, i))
+
+        while th < threshold:
+            current_mention += 1
+            th += (list_appreciation.count(appreciation[current_mention]) / len(list_appreciation))
+
+        return appreciation[current_mention]
+
 
 class Combinations:
     """
@@ -295,6 +320,7 @@ class Repartition:
 
         return appreciation[currentMention]
 
+
     def get_lower_appreciation(self, appreciation):
         """
         Return the percentage of appreciation lower than the argument
@@ -320,13 +346,15 @@ class Repartitions:
     Class Repartitions is responsible of the creation of all the Repartitions
     """
 
-    def __init__(self, appreciations, nb_project = None):
+    def __init__(self, appreciations, nb_project=None, threshold=None ):
         """
         Initialize the repartitions
         :param appreciations: All the appreciations retrieve
         :param nb_project: number of group we need to form
+        :param threshold: parameter of the euristic: between 0 and 1
         :type appreciations: Appreciations
         :type nb_project: int
+        :type threshold: float
         :return: a list of repartition with the students number
         """
         students = []
@@ -336,8 +364,33 @@ class Repartitions:
         self.combinations = Combinations(students)
         self.appreciations = appreciations
         self.repartitions = []
-        if nb_project == None:
-            modulo = len(appreciations.studentNumbers) %2
+        #for the euristic
+        self.blacklist2 = []
+        self.blacklist3 = []
+        self.threshold = threshold
+
+
+
+        if threshold is not None:
+            for id_student in range(len(self.appreciations.studentNumbers)):
+                combinations_blacklist = self.blacklisting(id_student=id_student)
+
+                # in order to remove duplicate
+                blacklist2_student = list(set(combinations_blacklist.combination_2) - set(self.blacklist2))
+                blacklist3_student = list(set(combinations_blacklist.combination_3) - set(self.blacklist3))
+
+                self.blacklist2 = self.blacklist2 + blacklist2_student
+                self.blacklist3 = self.blacklist3 + blacklist3_student
+
+        print("nb combi de 2 avant : "+ str(len(self.combinations.combination_2)))
+        print("nb combi de 3 avant : " + str(len(self.combinations.combination_3)))
+        self.combinations.combination_2 = [x for x in self.combinations.combination_2 if x not in self.blacklist2]
+        self.combinations.combination_3 = [x for x in self.combinations.combination_3 if x not in self.blacklist3]
+
+        print("nb combi de 2 après : "+ str(len(self.combinations.combination_2)))
+        print("nb combi de 3 après : " + str(len(self.combinations.combination_3)))
+        if nb_project is None:
+            modulo = len(appreciations.studentNumbers) % 2
             if modulo == 0:
                 nb_project = len(appreciations.studentNumbers)/2
             elif modulo == 1:
@@ -345,6 +398,29 @@ class Repartitions:
 
         self.nb_g2 = nb_project - (len(students) - 2 * nb_project)
         self.nb_g3 = nb_project - self.nb_g2
+
+
+    def blacklisting(self, id_student):
+        """
+        Return a blacklist for a specific student
+        :param id_student: id of the student
+        :type id_student: int
+        :return: a black list
+        :rtype: Combinations
+        """
+        threshold_mention = self.appreciations.get_threshold_appreciation(id_student=1, threshold=self.threshold)
+        list_student_blacklist = []
+        list_student_blacklist.append(id_student)
+        for other_student in range(len(self.appreciations.studentNumbers)):
+            if not superior_appreciation(self.appreciations.getAppreciation(id_student, other_student), threshold_mention) and id_student != other_student:
+                list_student_blacklist.append(other_student)
+
+
+        list_student_blacklist.sort()
+        blacklist_combinations = Combinations(list_student_blacklist)
+
+        return blacklist_combinations
+
 
     def addRepartition(self, repartition):
         """
@@ -366,6 +442,7 @@ class Repartitions:
         if self.nb_g3 == 0:  # case where we don't have groups of 3
             remaining_students = self.students.copy()
             combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
+            combi_remaining_g2 = [x for x in combi_remaining_g2 if x not in self.blacklist2]
             repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
             for rep_g2 in repartitions_g2:
                 repartition_tmp = Repartition(self.appreciations, list(rep_g2))
@@ -401,6 +478,7 @@ class Repartitions:
 
                     # and we complete the repartition with groups of 2
                     combi_remaining_g2 = list(itertools.combinations(remaining_students, 2))
+                    combi_remaining_g2 = [x for x in combi_remaining_g2 if x not in self.blacklist2]
                     repartitions_g2 = generateAllGroups(combi_remaining_g2, int(self.nb_g2))
                     for rep_g2 in repartitions_g2:
                         repartition_tmp = Repartition(self.appreciations, list(rep_g3) + list(rep_g2))
@@ -425,9 +503,6 @@ class Repartitions:
                 repartitions_equality_separation.append(repartition)
             elif repartition.get_lower_appreciation(max_appreciation) == min_lower_appreciation:
                 repartitions_equality_separation.append(repartition)
-
-
-        print(len(self.repartitions))
 
         # printSatisfactionRepartition(self.repartitions[0])
         # we gather the students numbers in order to send the results
@@ -461,16 +536,12 @@ def createCSVFile(repartitions):
 
 start_time = time.time()
 ext = sys.argv[1][1:]
-appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv'    )     # we define the number of students
+appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv')     # we define the number of students
 
-
-repartitions = Repartitions(appreciations)  # we define the number of group we need to form
+#we have to modify the threshold in order to configure the euristic
+repartitions = Repartitions(appreciations=appreciations, nb_project=18, threshold=0.5)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
 print(str(len(repartitions_obtenues)) + " appreciations")
-print(repartitions_obtenues[0])
-# print(len(repartitions_obtenues))
-# print(repartitions_obtenues)
-
 
 createCSVFile(repartitions_obtenues)
 
