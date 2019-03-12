@@ -376,18 +376,20 @@ class Repartitions:
                 combinations_blacklist = self.blacklisting(id_student=id_student)
 
                 # in order to remove duplicate
-                blacklist2_student = list(set(combinations_blacklist.combination_2) - set(self.blacklist2))
-                blacklist3_student = list(set(combinations_blacklist.combination_3) - set(self.blacklist3))
-
+                blacklist2_student = [x for x in combinations_blacklist.combination_2 if x not in self.blacklist2]
+                blacklist3_student = [x for x in combinations_blacklist.combination_3 if x not in self.blacklist3]
+                #blacklist2_student = list(set(combinations_blacklist.combination_2) - set(self.blacklist2))
+                #blacklist3_student = list(set(combinations_blacklist.combination_3) - set(self.blacklist3))
                 self.blacklist2 = self.blacklist2 + blacklist2_student
                 self.blacklist3 = self.blacklist3 + blacklist3_student
 
-        print("nb combi de 2 avant : "+ str(len(self.combinations.combination_2)))
+
+        print("nb combi de 2 avant : " + str(len(self.combinations.combination_2)))
         print("nb combi de 3 avant : " + str(len(self.combinations.combination_3)))
         self.combinations.combination_2 = [x for x in self.combinations.combination_2 if x not in self.blacklist2]
         self.combinations.combination_3 = [x for x in self.combinations.combination_3 if x not in self.blacklist3]
 
-        print("nb combi de 2 après : "+ str(len(self.combinations.combination_2)))
+        print("nb combi de 2 après : " + str(len(self.combinations.combination_2)))
         print("nb combi de 3 après : " + str(len(self.combinations.combination_3)))
         if nb_project is None:
             modulo = len(appreciations.studentNumbers) % 2
@@ -410,15 +412,25 @@ class Repartitions:
         """
         threshold_mention = self.appreciations.get_threshold_appreciation(id_student=1, threshold=self.threshold)
         list_student_blacklist = []
+        blacklist_group_2 = []
+        blacklist_group_3 = []
         list_student_blacklist.append(id_student)
         for other_student in range(len(self.appreciations.studentNumbers)):
             if not superior_appreciation(self.appreciations.getAppreciation(id_student, other_student), threshold_mention) and id_student != other_student:
-                list_student_blacklist.append(other_student)
+                group2_blacklisted = [id_student, other_student]
+                group2_blacklisted.sort()
+                blacklist_group_2.append(tuple(group2_blacklisted))
 
+                for other_student_3 in range(len(self.appreciations.studentNumbers)):
+                    if other_student_3 != id_student and other_student_3 != other_student:
+                        group3_blacklisted = [id_student, other_student, other_student_3]
+                        group3_blacklisted.sort()
+                        blacklist_group_3.append(tuple(group3_blacklisted))
 
         list_student_blacklist.sort()
-        blacklist_combinations = Combinations(list_student_blacklist)
-
+        blacklist_combinations = Combinations([])
+        blacklist_combinations.combination_2 = blacklist_group_2
+        blacklist_combinations.combination_3 = blacklist_group_3
         return blacklist_combinations
 
 
@@ -539,7 +551,7 @@ ext = sys.argv[1][1:]
 appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv')     # we define the number of students
 
 #we have to modify the threshold in order to configure the euristic
-repartitions = Repartitions(appreciations=appreciations, nb_project=18, threshold=0.5)  # we define the number of group we need to form
+repartitions = Repartitions(appreciations=appreciations)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
 print(str(len(repartitions_obtenues)) + " appreciations")
 
