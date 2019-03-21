@@ -16,25 +16,49 @@ import subprocess
 # ==================================================================== #
 
 # The report number beeing processed
-report_number = 4
+report_number = 6
 
 # The maximum time a group can take to run their script, in seconds
-max_compute_time = 8.5
+# -1 => infini
+max_compute_time = -1
+
+# The argument used to launch other processus
+argument = "reel"
+
+# -1 => pas de limite
+nlimit = -1
+
+ext = ""
 
 # ==================================================================== #
 
-# Check that the script is run with the -EXT argument
-if len(sys.argv) < 2:
-    raise RuntimeError("You must specify the -EXT")
+for arg in sys.argv:
+    # Remove the "-" to just keep what is behind
+    if arg == "-a" or arg == "--all":
+        argument = "exhaustif"
+    elif arg == "-r" or arg == "--real":
+        argument = "reel"
+    elif arg.find("--ext=") != -1:
+        ext = arg[6:]
+    elif arg[0] == "-" and arg[1] == "n":
+        nlimit = int(arg[2:])
+    elif arg.find("--number=") != -1:
+        nlimit = int(arg[9:])
+    elif arg[0] == "-" and arg[1] == "t":
+        max_compute_time = int(arg[2:])
+    elif arg.find("--time=") != -1:
+        max_compute_time = int(arg[7:])
 
-# Remove the "-" to just keep the EXT
-ext = sys.argv[1][1:]
+print("argument:", argument)
+print("ext:", ext)
+print("n limit:", nlimit)
+print("max compute time:", max_compute_time)
 
 # Construct the path to the project folder
 project_folder = "PROJET_PIFE_" + str(report_number)
 
 # The python executable name it must python or python3
-python_exec = "python3"
+python_exec = "python"
 
 # Construct the data folder
 data_folder = project_folder + "/DONNEES"
@@ -68,45 +92,81 @@ directory_list = os.listdir(project_folder)
 directory_list.remove("DONNEES")
 directory_list.remove("RESULTATS")
 
+_stdout = sys.stdout
+_stderr = sys.stderr
+
 # For each group run thir script
 for group_acronym in directory_list:
-    print("Processing group " + group_acronym + ": ")
+    print(group_acronym + " - DEBUT")
+    sys.stdout = os.devnull
+    sys.stderr = os.devnull
+
     group_folder = project_folder + "/" + group_acronym
     prog_path = group_folder + "/" + group_acronym + ".py"
 
     if not os.path.exists(prog_path):
+        sys.stdout = _stdout
+        sys.stderr = _stderr
         print("Can't load the script at: " + prog_path)
+        print(group_acronym + " - ECHEC")
         continue
 
     # Run the group' script
-    args = [python_exec, group_acronym + ".py", "-" + ext]
+    strlimit = ""
+    if nlimit == -1:
+        strlimit = ""
+    else:
+        strlimit = "--number=" + str(nlimit)
+
+    args = [python_exec, group_acronym + ".py", "--arg=" + argument, strlimit, "--ext=" + ext]
+    sys.stdout = _stdout
+    sys.stderr = _stderr
+    print("args:", args)
+    sys.stdout = os.devnull
+    sys.stderr = os.devnull
     try:
         process = subprocess.Popen(args, stderr=subprocess.PIPE, cwd=group_folder)
     except IOError:
         _, value, traceback = sys.exc_info()
-        print('Error opening %s: %s' % (value.filename, value.strerror))
-        continue
+        sys.stdout = _stdout
+        sys.stderr = _stderr
+        print("NOT A GROUP ERROR !")
+        print("ERROR: Change the 'python_exec' variable (inside the script MD2019) to either 'python' or 'python3' to make this script work")
+        print("NOT A GROUP ERROR !")
+        exit()
 
     stderr = None
 
     # Try to get errors back from the script with a timeout
     try:
-        stdout, stderr = process.communicate(timeout=max_compute_time)
+        if max_compute_time == -1:
+            stdout, stderr = process.communicate()
+        else:
+            stdout, stderr = process.communicate(timeout=max_compute_time * 1.1)
     except subprocess.TimeoutExpired:
         # In the case where the script was too long,
         # just kill it and process the next group
         process.kill()
+        sys.stdout = _stdout
+        sys.stderr = _stderr
         print("Script was too long")
+        print(group_acronym + " - ECHEC")
         continue
     except:
         process.kill()
+        sys.stdout = _stdout
+        sys.stderr = _stderr
         print("Script crashed")
+        print(group_acronym + " - ECHEC")
         continue
 
     # If stderr is not None then an error occured in
     # print the error and pass to the next script
     if stderr is not None and len(stderr) > 0:
+        sys.stdout = _stdout
+        sys.stderr = _stderr
         print(stderr.decode("utf-8"))
+        print(group_acronym + " - ECHEC")
         continue
 
     process.kill()
@@ -123,16 +183,18 @@ for group_acronym in directory_list:
             for row in result_reader:
                 result[group_acronym].append(row)
 
-            # print(result[group_acronym])
             group_file.close()
 
-            print("\nGROUP OK")
+            sys.stdout = _stdout
+            sys.stderr = _stderr
+            print("\nGROUP " + group_acronym + " - OK")
     except IOError:
         _, value, traceback = sys.exc_info()
+        sys.stdout = _stdout
+        sys.stderr = _stderr
         print('Error opening the csv file %s: %s' % (value.filename, value.strerror))
+        print(group_acronym + " - ECHEC")
         continue
-
-ext = sys.argv[1][1:]
 
 # Write in the CSV the result
 with open(resultat_path, mode="w+", newline="") as result_file:
