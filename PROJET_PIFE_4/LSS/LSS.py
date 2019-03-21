@@ -442,9 +442,13 @@ class Repartitions:
         """
         self.repartitions.append(repartition)
 
-    def generateRepartitions(self):
+    def generateRepartitions(self, number_max_repartition = sys.maxsize):
         """
         Generate all the repartitions
+        :param number_max_repartition: the number max of repartition we want to send
+        :type number_max_repartition: int
+        :return: list of Repartition
+        :rtype: list
         """
 
         max_appreciation = 'AR'
@@ -519,16 +523,30 @@ class Repartitions:
         # printSatisfactionRepartition(self.repartitions[0])
         # we gather the students numbers in order to send the results
         list_affichage = []
-        for repartition in repartitions_equality_separation:
-            repartition_numEtu = []
-            for group in repartition.repartition:
-                group_numEtu = []
-                for idStudent in group:
-                    group_numEtu.append(self.appreciations.studentNumbers[idStudent])
-                repartition_numEtu.append(group_numEtu)
 
-            list_affichage.append(repartition_numEtu)
+        if len(repartitions_equality_separation) < number_max_repartition:
+            for repartition in repartitions_equality_separation:
+                repartition_num_etu = []
+                for group in repartition.repartition:
+                    group_num_etu = []
+                    for idStudent in group:
+                        group_num_etu.append(self.appreciations.studentNumbers[idStudent])
+                    repartition_num_etu.append(group_num_etu)
+
+                list_affichage.append(repartition_num_etu)
+        else:
+            for idRep in range(number_max_repartition):
+                repartition_num_etu = []
+                for group in repartitions_equality_separation[idRep].repartition:
+                    group_num_etu = []
+                    for idStudent in group:
+                        group_num_etu.append(self.appreciations.studentNumbers[idStudent])
+                    repartition_num_etu.append(group_num_etu)
+
+                list_affichage.append(repartition_num_etu)
+
         return list_affichage
+
 
 def createCSVFile(repartitions):
     """
@@ -554,19 +572,25 @@ for arg in sys.argv[1:]:
     if sub_arg[:3] == "arg":
         launch_mode = sub_arg[4:]
     elif sub_arg[:3] == "num":
-        number_results_max = sub_arg[7:]
+        number_results_max = int(float(sub_arg[7:]))
     elif sub_arg[:3] == "ext":
         ext = sub_arg[4:]
 
-exit(5)
-appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv')     # we define the number of students
+appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv', number_of_student= 11)     # we define the number of students
 
 #we have to modify the threshold in order to configure the euristic
-repartitions = Repartitions(appreciations=appreciations)  # we define the number of group we need to form
-repartitions_obtenues = repartitions.generateRepartitions()
-print(str(len(repartitions_obtenues)) + " répartitions")
+if launch_mode == "exhaustif":
+    repartitions = Repartitions(appreciations=appreciations)  # we define the number of group we need to form
+elif launch_mode == "reel":
+    repartitions = Repartitions(appreciations=appreciations, threshold=0.5)  # we define the number of group we need to form
 
-createCSVFile(repartitions_obtenues)
+if number_results_max is None:
+    repartitions_get = repartitions.generateRepartitions()
+else:
+    repartitions_get = repartitions.generateRepartitions(number_results_max)
+print(str(len(repartitions_get)) + " répartitions")
+
+createCSVFile(repartitions_get)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
