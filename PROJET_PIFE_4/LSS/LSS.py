@@ -547,13 +547,24 @@ def createCSVFile(repartitions):
             filewriter.writerow(repartition)
 
 start_time = time.time()
-ext = sys.argv[1][1:]
+launch_mode = "exhaustif"
+number_results_max = None
+for arg in sys.argv[1:]:
+    sub_arg = arg[2:]
+    if sub_arg[:3] == "arg":
+        launch_mode = sub_arg[4:]
+    elif sub_arg[:3] == "num":
+        number_results_max = sub_arg[7:]
+    elif sub_arg[:3] == "ext":
+        ext = sub_arg[4:]
+
+exit(5)
 appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv')     # we define the number of students
 
 #we have to modify the threshold in order to configure the euristic
 repartitions = Repartitions(appreciations=appreciations)  # we define the number of group we need to form
 repartitions_obtenues = repartitions.generateRepartitions()
-print(str(len(repartitions_obtenues)) + " appreciations")
+print(str(len(repartitions_obtenues)) + " répartitions")
 
 createCSVFile(repartitions_obtenues)
 
