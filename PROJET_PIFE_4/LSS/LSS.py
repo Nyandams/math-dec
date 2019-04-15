@@ -576,7 +576,7 @@ for arg in sys.argv[1:]:
     elif sub_arg[:3] == "ext":
         ext = sub_arg[4:]
 
-appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv', number_of_student= 11)     # we define the number of students
+appreciations = retrieveAppreciationsCSV('../DONNEES/preferences' + ext + '.csv')     # we define the number of students
 
 #we have to modify the threshold in order to configure the euristic
 if launch_mode == "exhaustif":
